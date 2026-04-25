@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: movement-ranking-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    networks:
+      - ranking-network
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ranking
+      DB_USER: ranking_user
+      DB_PASS: ranking_pass
+
+  nginx:
+    image: nginx:alpine
+    container_name: movement-ranking-nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - ranking-network
+    depends_on:
+      - app
+
+  mysql:
+    image: mysql:8.0
+    container_name: movement-ranking-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ranking
+      MYSQL_USER: ranking_user
+      MYSQL_PASSWORD: ranking_pass
+      MYSQL_ROOT_PASSWORD: root_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    networks:
+      - ranking-network
+
+networks:
+  ranking-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local
