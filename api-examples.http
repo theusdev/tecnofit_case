@@ -1,0 +1,87 @@
+### Movement Ranking API - Exemplos de Requisições
+
+### 1. Health Check
+GET http://localhost:8080/health
+Accept: application/json
+
+###
+
+### 2. Listar Todos os Movimentos
+GET http://localhost:8080/movements
+Accept: application/json
+
+###
+
+### 3. Ranking Deadlift (sem limite)
+GET http://localhost:8080/ranking?movement_id=1
+Accept: application/json
+
+###
+
+### 4. Ranking Deadlift (top 5)
+GET http://localhost:8080/ranking?movement_id=1&limit=5
+Accept: application/json
+
+###
+
+### 5. Ranking Back Squat (sem limite)
+GET http://localhost:8080/ranking?movement_id=2
+Accept: application/json
+
+###
+
+### 6. Ranking Back Squat (top 3)
+GET http://localhost:8080/ranking?movement_id=2&limit=3
+Accept: application/json
+
+###
+
+### 7. Ranking Bench Press (sem limite)
+GET http://localhost:8080/ranking?movement_id=3
+Accept: application/json
+
+###
+
+### CASOS DE ERRO
+
+### 8. Erro: movement_id obrigatório
+GET http://localhost:8080/ranking
+Accept: application/json
+
+###
+
+### 9. Erro: movement_id inválido (zero)
+GET http://localhost:8080/ranking?movement_id=0
+Accept: application/json
+
+###
+
+### 10. Erro: movement_id negativo
+GET http://localhost:8080/ranking?movement_id=-1
+Accept: application/json
+
+###
+
+### 11. Erro: limit inválido (zero)
+GET http://localhost:8080/ranking?movement_id=1&limit=0
+Accept: application/json
+
+###
+
+### 12. Erro: limit negativo
+GET http://localhost:8080/ranking?movement_id=1&limit=-5
+Accept: application/json
+
+###
+
+### 13. Erro: movimento não encontrado
+GET http://localhost:8080/ranking?movement_id=999
+Accept: application/json
+
+###
+
+### 14. Erro: rota não encontrada
+GET http://localhost:8080/invalid-route
+Accept: application/json
+
+###
