@@ -27,22 +27,30 @@ class RankingService
         return $this->movementRepository->findAll();
     }
 
-    public function getRankingByMovement(int $movementId, ?int $limit = null): MovementRanking
+    public function getRanking(int|string $movementIdentifier, ?int $limit = null): MovementRanking
     {
-        if ($movementId <= 0) {
-            throw new ValidationException('O ID do movimento deve ser um número positivo');
-        }
-
         if ($limit !== null && $limit <= 0) {
             throw new ValidationException('O limite deve ser um número positivo');
         }
 
-        $movement = $this->findMovementById($movementId);
-
-        if ($movement === null) {
-            throw new NotFoundException("Movimento com ID {$movementId} não encontrado");
+        if (is_int($movementIdentifier)) {
+            if ($movementIdentifier <= 0) {
+                throw new ValidationException('O ID do movimento deve ser um número positivo');
+            }
+            $movement = $this->movementRepository->findById($movementIdentifier);
+        } else {
+            if (trim($movementIdentifier) === '') {
+                throw new ValidationException('O nome do movimento não pode ser vazio');
+            }
+            $movement = $this->movementRepository->findByName($movementIdentifier);
         }
 
+        if ($movement === null) {
+            $identifier = is_int($movementIdentifier) ? "ID {$movementIdentifier}" : "nome '{$movementIdentifier}'";
+            throw new NotFoundException("Movimento com {$identifier} não encontrado");
+        }
+
+        $movementId = $movement['id'];
         $rankingData = $this->personalRecordRepository->getRankingByMovement($movementId, $limit);
         $totalUsers = $this->personalRecordRepository->countUsersByMovement($movementId);
 
@@ -66,18 +74,10 @@ class RankingService
     }
 
     /**
-     * @return array{id: int, name: string}|null
+     * @deprecated Use getRanking() instead
      */
-    private function findMovementById(int $movementId): ?array
+    public function getRankingByMovement(int $movementId, ?int $limit = null): MovementRanking
     {
-        $movements = $this->movementRepository->findAll();
-
-        foreach ($movements as $movement) {
-            if ($movement['id'] === $movementId) {
-                return $movement;
-            }
-        }
-
-        return null;
+        return $this->getRanking($movementId, $limit);
     }
 }

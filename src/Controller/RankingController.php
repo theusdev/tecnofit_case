@@ -38,47 +38,75 @@ class RankingController
     public function getRanking(Request $request, Response $response): void
     {
         try {
-            if (!$request->hasQueryParam('movement_id')) {
+            $hasMovementId = $request->hasQueryParam('movement_id');
+            $hasMovementName = $request->hasQueryParam('movement_name');
+
+            // Valida que exatamente um parâmetro está presente (XOR)
+            if (!$hasMovementId && !$hasMovementName) {
                 $response->error(
-                    'validation_error',
-                    'O parâmetro movement_id é obrigatório',
+                    'parametros_invalidos',
+                    'Exatamente um parâmetro é obrigatório: movement_id ou movement_name',
                     400
                 );
                 return;
             }
 
-            $movementId = (int) $request->getQueryParam('movement_id');
+            if ($hasMovementId && $hasMovementName) {
+                $response->error(
+                    'parametros_invalidos',
+                    'Exatamente um parâmetro é obrigatório: movement_id ou movement_name',
+                    400
+                );
+                return;
+            }
+
+            $movementIdentifier = $hasMovementId
+                ? (int) $request->getQueryParam('movement_id')
+                : $request->getQueryParam('movement_name');
+
             $limit = $request->hasQueryParam('limit')
                 ? (int) $request->getQueryParam('limit')
                 : null;
 
-            $ranking = $this->rankingService->getRankingByMovement($movementId, $limit);
+            $ranking = $this->rankingService->getRanking($movementIdentifier, $limit);
 
+            // Formato JSON conforme especificação do design
             $response->json([
                 'data' => [
-                    'movement_id' => $ranking->movementId,
-                    'movement_name' => $ranking->movementName,
-                    'total_users' => $ranking->totalUsers,
+                    'movement' => [
+                        'id' => $ranking->movementId,
+                        'name' => $ranking->movementName,
+                    ],
                     'ranking' => array_map(
                         fn ($entry) => [
                             'position' => $entry->position,
-                            'user_id' => $entry->userId,
-                            'user_name' => $entry->userName,
-                            'personal_record' => $entry->personalRecord,
-                            'record_date' => $entry->recordDate,
+                            'user' => [
+                                'id' => $entry->userId,
+                                'name' => $entry->userName,
+                            ],
+                            'personal_record' => [
+                                'value' => $entry->personalRecord,
+                                'date' => $entry->recordDate,
+                            ],
                         ],
                         $ranking->entries
                     ),
                 ],
+                'meta' => [
+                    'total_users' => $ranking->totalUsers,
+                    'generated_at' => gmdate('Y-m-d\TH:i:s\Z'),
+                ],
             ]);
         } catch (ValidationException $e) {
-            $response->error('validation_error', $e->getMessage(), 400);
+            $response->error('parametros_invalidos', $e->getMessage(), 400);
         } catch (NotFoundException $e) {
-            $response->error('not_found', $e->getMessage(), 404);
+            $response->error('movimento_nao_encontrado', $e->getMessage(), 404);
         } catch (Throwable $e) {
+            // Log completo do erro para debugging (não expor detalhes ao cliente)
+            error_log('Erro ao buscar ranking: ' . $e->getMessage());
             $response->error(
-                'internal_error',
-                'Erro ao buscar ranking',
+                'erro_interno',
+                'Ocorreu um erro inesperado',
                 500
             );
         }

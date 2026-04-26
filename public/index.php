@@ -54,7 +54,7 @@ $rankingController = new RankingController($rankingService);
 $router = new Router();
 $router->get('/health', [$healthController, 'health']);
 $router->get('/movements', [$rankingController, 'listMovements']);
-$router->get('/ranking', [$rankingController, 'getRanking']);
+$router->get('/api/rankings', [$rankingController, 'getRanking']);
 
 // Despachar request
 $request = new Request();
