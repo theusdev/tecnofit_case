@@ -3,64 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movement Ranking API - Demonstração</title>
+    <title>Tecnofit - Ranking de Movimentos</title>
+    <link rel="icon" type="image/jpeg" href="assets/tecnofit-icon.jpg">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intro.js@7.2.0/minified/introjs.min.css">
     <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Movement Ranking API</h1>
-            <p>API REST em PHP puro com MySQL 8 Window Functions</p>
-        </header>
-
-        <div class="tabs">
-            <button class="tab-button active" data-tab="ranking">Ranking</button>
-            <button class="tab-button" data-tab="json">Resposta JSON</button>
-            <button class="tab-button" data-tab="regras">Regras de Negócio</button>
-            <button class="tab-button" data-tab="testes">Testes Cobertos</button>
+    <header id="main-header" class="header"
+            data-intro="Bem-vindo ao Sistema de Ranking de Movimentos da Tecnofit! Este é um case técnico desenvolvido em PHP puro com MySQL 8, utilizando Window Functions para calcular rankings com tratamento de empates."
+            data-step="1">
+        <div class="header-container">
+            <div class="header-left">
+                <div class="logo">
+                    <img id="logo-img" src="assets/logo-amarelo.png" alt="Tecnofit">
+                </div>
+                <div class="header-title">
+                    <h1>Ranking de Movimentos</h1>
+                    <p>Sistema de Análise de Desempenho</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="help-center-btn" onclick="app.startIntro()" title="Iniciar tour guiado"
+                        data-intro="Use este botão Central de ajuda a qualquer momento para reiniciar o tour guiado. Você também pode usar o atalho Ctrl+H. Obrigado por avaliar este case técnico feito com muito carinho e dedicação!"
+                        data-step="10">
+                    <span class="help-icon">?</span>
+                    <span class="help-text">Central de ajuda</span>
+                </button>
+                <div class="user-profile">
+                    <img src="assets/eu_profissional_1.jpg" alt="Matheus Coutinho" class="user-avatar">
+                    <span class="user-name">Matheus Coutinho</span>
+                </div>
+            </div>
         </div>
+    </header>
+
+    <div class="container">
+
+        <nav class="tabs"
+             data-intro="O sistema possui 4 abas principais: Ranking para consultar dados, Resposta JSON para ver o retorno da API, Regras de Negócio para entender como funciona o cálculo, e Testes Cobertos mostrando toda a cobertura de testes automatizados."
+             data-step="2">
+            <button class="tab-button active" data-tab="ranking">
+                <span>Ranking</span>
+            </button>
+            <button class="tab-button" data-tab="json">
+                <span>Resposta JSON</span>
+            </button>
+            <button class="tab-button" data-tab="regras">
+                <span>Regras de Negócio</span>
+            </button>
+            <button class="tab-button" data-tab="testes">
+                <span>Testes Cobertos</span>
+            </button>
+        </nav>
 
         <div class="tab-content">
             <!-- Aba 1: Ranking -->
             <div id="ranking" class="tab-pane active">
-                <h2>Buscar Ranking</h2>
-                <p>Busque o ranking de um movimento por ID ou Nome</p>
-
-                <div class="form-group">
-                    <label>
-                        <input type="radio" name="search_type" value="id" checked>
-                        Buscar por ID
-                    </label>
-                    <label>
-                        <input type="radio" name="search_type" value="name">
-                        Buscar por Nome
-                    </label>
+                <div class="page-header">
+                    <h2>Buscar Ranking de Movimento</h2>
+                    <p>Consulte o ranking dos atletas por movimento e analise os recordes pessoais</p>
                 </div>
 
-                <div class="form-group" id="search-id-group">
-                    <label for="movement-id">ID do Movimento:</label>
-                    <select id="movement-id">
-                        <option value="">Carregue os movimentos primeiro</option>
-                    </select>
+                <div class="search-controls"
+                     data-intro="Aqui você pode buscar o ranking de um movimento de duas formas: por ID numérico ou por nome. A API suporta ambas as opções de busca."
+                     data-step="3">
+                    <div class="search-type-toggle">
+                        <label class="radio-label">
+                            <input type="radio" name="search_type" value="id" checked>
+                            <span>Buscar por ID</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="search_type" value="name">
+                            <span>Buscar por Nome</span>
+                        </label>
+                    </div>
+
+                    <div class="search-inputs">
+                        <div class="search-group" id="search-id-group">
+                            <div class="input-wrapper">
+                                <label for="movement-id">Selecione o movimento</label>
+                                <select id="movement-id" class="search-input">
+                                    <option value="">Carregue os movimentos primeiro</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="search-group" id="search-name-group" style="display: none;">
+                            <div class="input-wrapper">
+                                <label for="movement-name">Pesquisa por nome</label>
+                                <div class="search-box">
+                                    <input type="text" id="movement-name" placeholder="Ex: Deadlift" class="search-input">
+                                    <span class="search-icon">🔍︎</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-group"
+                         data-intro="Use o botão 'Buscar Ranking' para consultar os dados. O botão 'Carregar Movimentos' popula a lista com os movimentos disponíveis no banco de dados."
+                         data-step="4">
+                        <button class="btn btn-primary" onclick="app.searchRanking()">Buscar Ranking</button>
+                        <button class="btn btn-outline" onclick="app.loadMovements()">Carregar Movimentos</button>
+                    </div>
                 </div>
 
-                <div class="form-group" id="search-name-group" style="display: none;">
-                    <label for="movement-name">Nome do Movimento:</label>
-                    <input type="text" id="movement-name" placeholder="Ex: Deadlift">
-                </div>
-
-                <button class="btn" onclick="app.searchRanking()">Buscar Ranking</button>
-                <button class="btn btn-secondary" onclick="app.loadMovements()">Carregar Movimentos</button>
-
-                <div id="ranking-table-result" class="result"></div>
-                <div id="ranking-chart-result" class="chart"></div>
+                <div id="ranking-table-result" class="result"
+                     data-intro="Os resultados aparecem aqui em formato de tabela, mostrando a posição, nome do atleta, recorde pessoal e data. Observe que atletas com o mesmo recorde compartilham a mesma posição."
+                     data-step="5"></div>
+                <div id="ranking-chart-result" class="chart"
+                     data-intro="Um gráfico de barras visual também é exibido para facilitar a análise comparativa dos recordes. As cores variam conforme a posição: amarelo para 1º, verde para 2º, rosa para 3º."
+                     data-step="6"></div>
             </div>
 
             <!-- Aba 2: JSON -->
             <div id="json" class="tab-pane">
                 <h2>Resposta JSON da API</h2>
                 <p>Visualize o JSON retornado pela última requisição</p>
-                <button class="btn btn-secondary" onclick="app.copyJson()">Copiar JSON</button>
+                <button class="btn btn-secondary" onclick="app.copyJson()"
+                        data-intro="Nesta aba você pode visualizar o JSON completo retornado pela API REST. O formato segue as especificações do case: dados aninhados (movement, user, personal_record) e datas em ISO 8601."
+                        data-step="7">Copiar JSON</button>
                 <div id="json-result" class="result">
                     <pre id="json-pre">Nenhuma requisição realizada ainda</pre>
                 </div>
@@ -88,7 +149,9 @@
                     <p class="example">Exemplo: Jose (180kg) e Paulo (180kg) ficam ambos na 2ª posição.</p>
                 </div>
 
-                <div class="rule-card highlight">
+                <div class="rule-card highlight"
+                     data-intro="Esta aba documenta todas as regras de negócio implementadas. A regra mais importante é o tratamento de empates usando RANK(): quando há empate, os atletas compartilham a posição e a próxima posição pula os números necessários (ex: 1º, 2º, 2º, 4º)."
+                     data-step="8">
                     <h3>4. Próxima Posição Após Empate (Regra RANK)</h3>
                     <p>Após um empate, a próxima posição considera todos os competidores anteriores.</p>
                     <p class="example">Exemplo: Se há 1 pessoa em 1º e 2 pessoas em 2º (empate), a próxima posição é a 4ª, não a 3ª.</p>
@@ -167,7 +230,9 @@
                 </ul>
 
                 <h3>Cobertura de Código</h3>
-                <ul class="test-list">
+                <ul class="test-list"
+                    data-intro="Esta aba mostra todos os testes automatizados implementados: testes unitários com mocks, testes de integração de repository, testes específicos de empates, e testes de endpoint HTTP. A cobertura de código é de 100% nos componentes principais."
+                    data-step="9">
                     <li>✓ RankingService: 100%</li>
                     <li>✓ RankingController: 100%</li>
                     <li>✓ PersonalRecordRepository: 100%</li>
@@ -177,11 +242,15 @@
         </div>
 
         <footer>
-            <p>Tecnofit Technical Case - Movement Ranking API</p>
-            <p>PHP 8.1 | MySQL 8.0 | Window Functions (RANK) | PSR-4 | Docker Compose</p>
+            <p>Tecnofit Case Técnico - Feito com carinho por Matheus Coutinho</p>
+            <p>PHP 8.1 | MySQL 8.0 | Window Functions (RANK) | Docker Compose</p>
+            <p style="font-size: 0.8rem; margin-top: 10px; opacity: 0.6;">
+                Atalho: Ctrl+H para tour guiado
+            </p>
         </footer>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/intro.js@7.2.0/intro.min.js"></script>
     <script src="assets/app.js"></script>
 </body>
 </html>

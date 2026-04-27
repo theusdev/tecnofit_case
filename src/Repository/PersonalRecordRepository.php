@@ -14,21 +14,32 @@ class PersonalRecordRepository
     }
 
     /**
-     * @return array<int, array{position: int, user_id: int, user_name: string, value: float, date: string}>
+     * @return array<int, array{user_id: int, user_name: string, value: float, date: string}>
      */
     public function getRankingByMovement(int $movementId, ?int $limit = null): array
     {
         $sql = '
             SELECT
-                RANK() OVER (ORDER BY pr.value DESC) as position,
-                u.id as user_id,
-                u.name as user_name,
-                pr.value,
-                DATE_FORMAT(pr.date, "%Y-%m-%dT%H:%i:%sZ") as date
-            FROM personal_record pr
-            INNER JOIN user u ON pr.user_id = u.id
-            WHERE pr.movement_id = :movement_id
-            ORDER BY position ASC, pr.value DESC
+                personal_bests.user_id,
+                personal_bests.user_name,
+                personal_bests.value,
+                personal_bests.date
+            FROM (
+                SELECT
+                    pr.user_id,
+                    u.name as user_name,
+                    pr.value,
+                    DATE_FORMAT(pr.date, "%Y-%m-%dT%H:%i:%sZ") as date,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY pr.user_id
+                        ORDER BY pr.value DESC, pr.date DESC, pr.id DESC
+                    ) as rn
+                FROM personal_record pr
+                INNER JOIN user u ON pr.user_id = u.id
+                WHERE pr.movement_id = :movement_id
+            ) as personal_bests
+            WHERE personal_bests.rn = 1
+            ORDER BY personal_bests.value DESC, personal_bests.user_name ASC
         ';
 
         if ($limit !== null) {

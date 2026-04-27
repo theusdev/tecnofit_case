@@ -54,16 +54,26 @@ class RankingService
         $rankingData = $this->personalRecordRepository->getRankingByMovement($movementId, $limit);
         $totalUsers = $this->personalRecordRepository->countUsersByMovement($movementId);
 
-        $entries = array_map(
-            fn (array $row) => new RankingEntry(
-                position: (int) $row['position'],
+        $entries = [];
+        $lastPersonalRecord = null;
+        $currentPosition = 0;
+
+        foreach ($rankingData as $index => $row) {
+            $personalRecord = (float) $row['value'];
+
+            if ($lastPersonalRecord === null || $personalRecord < $lastPersonalRecord) {
+                $currentPosition = $index + 1;
+                $lastPersonalRecord = $personalRecord;
+            }
+
+            $entries[] = new RankingEntry(
+                position: $currentPosition,
                 userId: (int) $row['user_id'],
                 userName: $row['user_name'],
-                personalRecord: (float) $row['value'],
+                personalRecord: $personalRecord,
                 recordDate: $row['date']
-            ),
-            $rankingData
-        );
+            );
+        }
 
         return new MovementRanking(
             movementId: $movementId,

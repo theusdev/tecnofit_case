@@ -131,14 +131,6 @@ class RankingServiceTest extends TestCase
 
     public function testGetRankingThrowsValidationExceptionForInvalidLimit(): void
     {
-        $movementData = ['id' => 1, 'name' => 'Deadlift'];
-
-        $this->movementRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->with(1)
-            ->willReturn($movementData);
-
         $this->expectException(ValidationException::class);
         $this->expectExceptionMessage('O limite deve ser um número positivo');
 

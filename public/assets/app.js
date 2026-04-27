@@ -1,11 +1,108 @@
 const app = {
-    baseUrl: 'http://localhost:8080',
+    baseUrl: window.location.origin,
     lastJsonResponse: null,
 
     init() {
         this.setupTabs();
         this.setupSearchTypeToggle();
+        this.setupScrollHeader();
+        this.setupIntroJS();
         this.loadMovements();
+    },
+
+    setupIntroJS() {
+        setTimeout(() => {
+            this.startIntro();
+        }, 1000);
+
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'h') {
+                e.preventDefault();
+                this.startIntro();
+            }
+        });
+    },
+
+    startIntro() {
+        const intro = introJs();
+
+        intro.setOptions({
+            nextLabel: 'Próximo',
+            prevLabel: 'Anterior',
+            doneLabel: 'Finalizar',
+            skipLabel: '✕',
+            showProgress: true,
+            showBullets: false,
+            exitOnOverlayClick: false,
+            disableInteraction: true,
+            scrollToElement: true,
+            scrollPadding: 100,
+            tooltipClass: 'customTooltip',
+            highlightClass: 'customHighlight',
+            tooltipPosition: 'auto'
+        });
+
+        intro.onbeforechange((targetElement) => {
+            const step = intro._currentStep;
+
+            if (step === 6) {
+                this.switchToTab('json');
+            } else if (step === 7) {
+                this.switchToTab('regras');
+            } else if (step === 8) {
+                this.switchToTab('testes');
+            } else if (step === 0 || step === 1 || step === 2 || step === 3 || step === 4 || step === 5) {
+                this.switchToTab('ranking');
+            }
+        });
+
+        intro.oncomplete(() => {
+            this.switchToTab('ranking');
+            console.log('Tour concluído!');
+        });
+
+        intro.onexit(() => {
+            this.switchToTab('ranking');
+            console.log('Tour encerrado');
+        });
+
+        intro.start();
+    },
+
+    switchToTab(tabName) {
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+
+        tabButtons.forEach(btn => {
+            if (btn.getAttribute('data-tab') === tabName) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        tabPanes.forEach(pane => {
+            if (pane.id === tabName) {
+                pane.classList.add('active');
+            } else {
+                pane.classList.remove('active');
+            }
+        });
+    },
+
+    setupScrollHeader() {
+        const header = document.getElementById('main-header');
+        const logo = document.getElementById('logo-img');
+
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+                logo.src = 'assets/logo-preto.png';
+            } else {
+                header.classList.remove('scrolled');
+                logo.src = 'assets/logo-amarelo.png';
+            }
+        });
     },
 
     setupTabs() {
@@ -132,11 +229,12 @@ const app = {
 
     renderRankingTable(container, data) {
         const title = document.createElement('h3');
-        title.textContent = data.movement.name;
+        title.textContent = `Ranking - ${data.movement.name}`;
         container.appendChild(title);
 
         if (data.ranking.length === 0) {
             const emptyP = document.createElement('p');
+            emptyP.className = 'error';
             emptyP.textContent = 'Nenhum recorde encontrado para este movimento';
             container.appendChild(emptyP);
             return;
@@ -146,7 +244,7 @@ const app = {
         const thead = document.createElement('thead');
         const headerRow = document.createElement('tr');
 
-        ['Posição', 'Usuário', 'Recorde (kg)', 'Data do Recorde'].forEach(text => {
+        ['Posição', 'Atleta', 'Recorde Pessoal', 'Data do Recorde'].forEach(text => {
             const th = document.createElement('th');
             th.textContent = text;
             headerRow.appendChild(th);
@@ -161,10 +259,10 @@ const app = {
 
             const posCell = document.createElement('td');
             posCell.className = 'position';
-            let medal = '';
-            if (entry.position === 1) medal = '🥇 ';
-            else if (entry.position === 2) medal = '🥈 ';
-            else if (entry.position === 3) medal = '🥉 ';
+            let medal = '';                                                                                                
+            if (entry.position === 1) medal = '🥇 ';                                                                       
+            else if (entry.position === 2) medal = '🥈 ';                                                                  
+            else if (entry.position === 3) medal = '🥉 ';                                                                  
             posCell.textContent = medal + entry.position + 'º';
             row.appendChild(posCell);
 
@@ -196,27 +294,40 @@ const app = {
         chartDiv.className = 'bar-chart';
 
         const title = document.createElement('h3');
-        title.textContent = 'Gráfico de Barras';
+        title.textContent = 'Visualização de Desempenho';
         chartDiv.appendChild(title);
 
         const maxValue = Math.max(...ranking.map(r => r.personal_record.value));
 
         ranking.forEach(entry => {
+            const barWrapper = document.createElement('div');
+            barWrapper.style.marginBottom = '8px';
+
             const bar = document.createElement('div');
-            bar.className = `bar rank-${Math.min(entry.position, 3)}`;
+
+            if (entry.position === 1) {
+                bar.className = 'bar rank-1';
+            } else if (entry.position === 2) {
+                bar.className = 'bar rank-2';
+            } else if (entry.position === 3) {
+                bar.className = 'bar rank-3';
+            } else {
+                bar.className = 'bar';
+            }
 
             const percentage = (entry.personal_record.value / maxValue) * 100;
-            bar.style.width = percentage + '%';
+            bar.style.width = Math.max(percentage, 25) + '%';
 
             const label = document.createElement('span');
-            label.textContent = entry.user.name;
+            label.textContent = `${entry.position}º - ${entry.user.name}`;
             bar.appendChild(label);
 
             const value = document.createElement('span');
             value.textContent = entry.personal_record.value + ' kg';
             bar.appendChild(value);
 
-            chartDiv.appendChild(bar);
+            barWrapper.appendChild(bar);
+            chartDiv.appendChild(barWrapper);
         });
 
         container.appendChild(chartDiv);

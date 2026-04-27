@@ -1,136 +1,167 @@
 # Movement Ranking API
 
-API REST desenvolvida em PHP puro para gerenciar e exibir rankings de movimentos baseados em recordes pessoais.
+API REST desenvolvida em PHP puro para retornar o ranking de um movimento com base no maior recorde pessoal de cada usuario.
 
-## Descrição
+O projeto foi construído para o case técnico da Tecnofit e inclui:
 
-Esta API foi desenvolvida como parte do desafio técnico da Tecnofit. O sistema permite:
+- endpoint REST para buscar ranking por `movement_id` ou `movement_name`
+- tratamento de empate no ranking
+- MySQL 8 com dados iniciais do desafio
+- frontend de demonstracao para visualizar a API em funcionamento
+- testes automatizados e organizacao por camadas
 
-- Listar todos os movimentos cadastrados
-- Obter ranking de usuários por movimento, ordenado por recorde pessoal
-- Suportar empates no ranking (mesma posição para mesmos valores)
-- Filtrar resultados com limite configurável
+## O que este projeto resolve
 
-## Stack Técnico
+Dado um movimento, a API retorna:
 
-- **PHP**: 8.1+ (strict types, readonly properties)
-- **MySQL**: 8.0+ (Window Functions - DENSE_RANK)
-- **Docker**: Compose para ambiente isolado
-- **Nginx**: 1.21+ como servidor web
-- **PHPUnit**: 10.0+ para testes automatizados
-- **PHPStan**: Level 6 para análise estática
-- **PHP-CS-Fixer**: PSR-12 para formatação de código
+- nome do movimento
+- lista ordenada de usuarios
+- recorde pessoal de cada usuario naquele movimento
+- posicao no ranking
+- data do recorde pessoal
 
-## Arquitetura
+Regras aplicadas:
 
-O projeto segue uma arquitetura em camadas:
+- o ranking considera apenas o maior recorde de cada usuario para o movimento consultado
+- a ordenacao e decrescente pelo valor do recorde
+- usuarios com o mesmo valor compartilham a mesma posicao
+- apos empate, a posicao seguinte respeita o comportamento de ranking competitivo: `1, 2, 2, 4`
 
+## Stack
+
+- PHP 8.1
+- MySQL 8
+- Nginx
+- Docker e Docker Compose
+- PHPUnit
+- PHPStan
+- PHP-CS-Fixer
+- JavaScript puro no frontend de demonstracao
+
+## Estrutura do projeto
+
+```text
+.
+├── config/                  # Configuracoes da aplicacao e banco
+├── database/                # Schema e seed do MySQL
+├── docker/                  # Configuracao do Nginx
+├── docs/                    # Documentacao complementar
+├── public/                  # Entrada HTTP e frontend de demonstracao
+├── src/
+│   ├── Controller/          # Camada HTTP
+│   ├── Database/            # Conexao PDO
+│   ├── Domain/              # Objetos de dominio
+│   ├── Exception/           # Excecoes da aplicacao
+│   ├── Http/                # Request, Response e Router
+│   ├── Repository/          # Acesso a dados
+│   └── Service/             # Regras de negocio
+├── tests/                   # Testes unitarios e de integracao
+├── composer.json
+├── docker-compose.yml
+└── README.md
 ```
-src/
-├── Controller/     # Recebe requisições HTTP e retorna respostas
-├── Service/        # Lógica de negócio e validações
-├── Repository/     # Acesso a dados com queries SQL
-├── Domain/         # Entidades e objetos de domínio
-├── Http/           # Componentes HTTP (Request, Response, Router)
-├── Database/       # Gerenciamento de conexão PDO
-└── Exception/      # Exceções personalizadas
-```
 
-### Padrões Utilizados
+## Como rodar localmente
 
-- **Dependency Injection Manual**: Sem uso de containers
-- **Value Objects**: RankingEntry (imutável)
-- **Aggregates**: MovementRanking
-- **Repository Pattern**: Separação de acesso a dados
-- **PSR-4 Autoloading**: Composer autoload
-- **Strict Types**: Todas as classes usam `declare(strict_types=1)`
+### 1. Dependencias
 
-## Instalação
+Antes de qualquer comando do projeto, instale:
 
-### Pré-requisitos
-
-- Docker e Docker Compose instalados
 - Git
+- Docker Desktop
 
-### Passos
+No Windows, o Docker Desktop precisa estar instalado e em execucao antes de subir os containers.
 
-1. Clone o repositório:
+Documentacao oficial:
+
+- [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/)
+
+### 2. Clonar o repositorio
+
 ```bash
 git clone <repository-url>
 cd tecnofit-case
 ```
 
-2. Copie o arquivo de ambiente:
+### 3. Subir o Docker Desktop
+
+Abra o Docker Desktop e confirme que ele esta em execucao.
+
+### 4. Copiar o arquivo de ambiente
+
 ```bash
 cp .env.example .env
 ```
 
-3. Suba os containers:
+Se estiver no PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+### 5. Subir os containers
+
 ```bash
-docker-compose up -d
+docker compose up -d --build
 ```
 
-4. Instale as dependências:
+Esse comando sobe:
+
+- `app`: PHP-FPM
+- `nginx`: servidor HTTP
+- `mysql`: banco de dados MySQL 8 com schema e seed
+
+### 6. Instalar dependencias do Composer dentro do container
+
 ```bash
-docker-compose exec app composer install
+docker compose exec app composer install
 ```
 
-5. Acesse a aplicação:
-- API: http://localhost:8080
-- Frontend Demo: http://localhost:8080/demo.html
+### 7. Acessar a aplicacao
 
-## Uso da API
+- Frontend de demonstracao: [http://localhost:8080](http://localhost:8080)
+- Health check: [http://localhost:8080/health](http://localhost:8080/health)
+- Lista de movimentos: [http://localhost:8080/movements](http://localhost:8080/movements)
 
-### Endpoints Disponíveis
+## Como usar a API
 
-#### 1. Health Check
-```
-GET /health
-```
-Retorna o status da API.
+### Buscar ranking por id
 
-**Resposta:**
-```json
-{
-  "status": "ok",
-  "timestamp": "2024-01-15 10:30:00"
-}
+```http
+GET /api/rankings?movement_id=1
 ```
 
-#### 2. Listar Movimentos
-```
-GET /movements
-```
-Retorna todos os movimentos cadastrados.
+Exemplo:
 
-**Resposta:**
-```json
-{
-  "data": [
-    {
-      "id": 1,
-      "name": "Deadlift"
-    },
-    {
-      "id": 2,
-      "name": "Back Squat"
-    }
-  ]
-}
+```bash
+curl "http://localhost:8080/api/rankings?movement_id=1"
 ```
 
-#### 3. Obter Ranking
-```
-GET /api/rankings?movement_id={id}
-GET /api/rankings?movement_name={name}
+### Buscar ranking por nome
+
+```http
+GET /api/rankings?movement_name=Deadlift
 ```
 
-**Parâmetros (mutuamente exclusivos):**
-- `movement_id` (XOR): ID do movimento
-- `movement_name` (XOR): Nome do movimento
-- `limit` (opcional): Número máximo de resultados
+Exemplo:
 
-**Resposta:**
+```bash
+curl "http://localhost:8080/api/rankings?movement_name=Deadlift"
+```
+
+### Parametros aceitos
+
+- `movement_id`: identificador numerico do movimento
+- `movement_name`: nome do movimento
+- `limit`: opcional, limita a quantidade de usuarios retornados
+
+Observacao:
+
+- envie `movement_id` ou `movement_name`
+- nao envie os dois ao mesmo tempo
+
+## Exemplo de resposta
+
 ```json
 {
   "data": {
@@ -142,162 +173,195 @@ GET /api/rankings?movement_name={name}
       {
         "position": 1,
         "user": {
+          "id": 2,
+          "name": "Jose"
+        },
+        "personal_record": {
+          "value": 190,
+          "date": "2021-01-06T00:00:00Z"
+        }
+      },
+      {
+        "position": 2,
+        "user": {
           "id": 1,
           "name": "Joao"
         },
         "personal_record": {
-          "value": 180.0,
-          "date": "2021-01-04T00:00:00Z"
+          "value": 180,
+          "date": "2021-01-02T00:00:00Z"
+        }
+      },
+      {
+        "position": 3,
+        "user": {
+          "id": 3,
+          "name": "Paulo"
+        },
+        "personal_record": {
+          "value": 170,
+          "date": "2021-01-01T00:00:00Z"
         }
       }
     ]
   },
   "meta": {
     "total_users": 3,
-    "generated_at": "2026-04-26T00:30:45Z"
+    "generated_at": "2026-04-27T00:00:00Z"
   }
 }
 ```
 
-### Tratamento de Erros
+## Erros da API
 
-A API retorna erros no formato:
+### 400 - parametros invalidos
+
 ```json
 {
   "error": {
-    "code": "validation_error",
-    "message": "O parâmetro movement_id é obrigatório"
+    "code": "parametros_invalidos",
+    "message": "Exatamente um parametro e obrigatorio: movement_id ou movement_name"
   }
 }
 ```
 
-**Códigos de erro:**
-- `validation_error` (400): Erro de validação nos parâmetros
-- `not_found` (404): Recurso não encontrado
-- `internal_error` (500): Erro interno do servidor
+### 404 - movimento nao encontrado
 
-## Testes
+```json
+{
+  "error": {
+    "code": "movimento_nao_encontrado",
+    "message": "Movimento com ID 999 nao encontrado"
+  }
+}
+```
 
-### Executar Testes
+### 500 - erro interno
+
+```json
+{
+  "error": {
+    "code": "erro_interno",
+    "message": "Ocorreu um erro inesperado"
+  }
+}
+```
+
+## Comandos uteis
+
+### Ver containers
 
 ```bash
-# Todos os testes
-docker-compose exec app vendor/bin/phpunit
-
-# Apenas testes de integração
-docker-compose exec app vendor/bin/phpunit --testsuite=Integration
-
-# Com cobertura
-docker-compose exec app vendor/bin/phpunit --coverage-html coverage
+docker compose ps
 ```
 
-### Análise Estática
+### Ver logs da aplicacao
 
 ```bash
-# PHPStan
-docker-compose exec app vendor/bin/phpstan analyse
-
-# PHP-CS-Fixer (verificar)
-docker-compose exec app vendor/bin/php-cs-fixer fix --dry-run --diff
-
-# PHP-CS-Fixer (corrigir)
-docker-compose exec app vendor/bin/php-cs-fixer fix
+docker compose logs app --tail=200
 ```
 
-## Banco de Dados
+### Derrubar containers
 
-### Schema
-
-O banco possui 3 tabelas principais:
-
-- **user**: Cadastro de usuários
-- **movement**: Tipos de movimento (Deadlift, Back Squat, etc.)
-- **personal_record**: Recordes pessoais de cada usuário por movimento
-
-### Seed Data
-
-O banco é inicializado com dados de exemplo:
-- 3 usuários (Joao, Jose, Paulo)
-- 3 movimentos (Deadlift, Back Squat, Bench Press)
-- 17 recordes pessoais
-
-### Window Functions
-
-O ranking utiliza a função `RANK()` do MySQL 8:
-```sql
-RANK() OVER (ORDER BY pr.value DESC) as position
+```bash
+docker compose down
 ```
 
-Isso garante que:
-- Usuários com o mesmo recorde recebem a mesma posição
-- Há saltos na numeração após empates (1, 2, 2, 4 ao invés de 1, 2, 2, 3)
-- Reflete corretamente a posição real no ranking
+### Derrubar containers e volume do banco
 
-## Frontend Demo
-
-Acesse http://localhost:8080 para visualizar a interface de demonstração com:
-- **Ranking**: Busca por ID ou Nome com gráfico de barras
-- **Resposta JSON**: Visualização do JSON retornado pela API
-- **Regras de Negócio**: Explicação visual das regras de ranking
-- **Testes Cobertos**: Lista completa de testes automatizados
-
-## Estrutura de Diretórios
-
-```
-.
-├── config/                 # Arquivos de configuração
-├── database/              # Schema e seeds SQL
-├── docker/                # Configurações Docker
-├── docs/                  # Documentação
-├── public/                # Ponto de entrada HTTP
-│   ├── css/              # Estilos do frontend
-│   ├── js/               # JavaScript do frontend
-│   ├── demo.html         # Interface de demonstração
-│   └── index.php         # Front controller
-├── src/                   # Código-fonte
-├── tests/                 # Testes automatizados
-├── .php-cs-fixer.php     # Configuração formatação
-├── phpstan.neon          # Configuração análise estática
-├── phpunit.xml           # Configuração testes
-├── composer.json         # Dependências PHP
-└── docker-compose.yml    # Orquestração containers
+```bash
+docker compose down -v
 ```
 
-## Qualidade de Código
+## Testes e qualidade
 
-- **PSR-12**: Padrão de codificação seguido
-- **Strict Types**: Tipagem estrita em todos os arquivos
-- **PHPStan Level 6**: Análise estática rigorosa
-- **Readonly Properties**: Imutabilidade onde aplicável
-- **SOLID Principles**: Aplicados na arquitetura
+Executar testes:
 
-## Decisões Técnicas
+```bash
+docker compose exec app php vendor/bin/phpunit
+```
 
-### Por que PHP Puro?
+Executar apenas testes unitarios:
 
-- Demonstrar conhecimento profundo da linguagem
-- Evitar overhead de frameworks
-- Controle total sobre a arquitetura
-- Código mais transparente para avaliação
+```bash
+docker compose exec app php vendor/bin/phpunit --testsuite=Unit
+```
 
-### Por que Window Functions?
+Executar apenas testes de integracao:
 
-- Performance superior vs. subqueries
-- Código SQL mais limpo e legível
-- Suporte nativo do MySQL 8
-- Cálculo de ranking em uma única query
+```bash
+docker compose exec app php vendor/bin/phpunit --testsuite=Integration
+```
 
-### Por que Dependency Injection Manual?
+Executar analise estatica:
 
-- Transparência total do código
-- Sem magia ou abstrações desnecessárias
-- Facilita debugging e compreensão
-- Adequado para aplicações de porte pequeno/médio
+```bash
+docker compose exec app php vendor/bin/phpstan analyse src tests --level=6
+```
+
+Executar verificacao de estilo:
+
+```bash
+docker compose exec app php vendor/bin/php-cs-fixer fix --dry-run --diff --allow-risky=yes
+```
+
+## Decisoes tecnicas
+
+### 1. PHP puro
+
+O desafio pedia PHP sem framework. A escolha foi manter a aplicacao enxuta, explicita e facil de avaliar, sem esconder a logica atras de abstrações de framework.
+
+### 2. Arquitetura em camadas
+
+A separacao entre `Controller`, `Service` e `Repository` ajuda a isolar responsabilidades:
+
+- controller recebe e devolve HTTP
+- service aplica regras de negocio
+- repository consulta o banco
+
+Isso deixa o codigo mais legivel e reduz acoplamento.
+
+### 3. Recorde pessoal por usuario
+
+O ranking nao considera todos os registros brutos. Primeiro o sistema identifica o melhor recorde de cada usuario para o movimento consultado e, so depois, monta a classificacao final.
+
+### 4. Empates
+
+Usuarios com o mesmo valor compartilham a mesma posicao. O calculo do ranking segue o modelo competitivo:
+
+```text
+190, 180, 180, 170 -> 1, 2, 2, 4
+```
+
+### 5. Contrato JSON
+
+O payload foi estruturado para representar entidades de forma clara:
+
+- `movement`
+- `ranking`
+- `user`
+- `personal_record`
+- `meta`
+
+Isso deixa a API mais semantica e mais facil de evoluir.
+
+## Informacoes adicionais relevantes
+
+### Implementacao alternativa considerada
+
+Uma alternativa seria calcular toda a posicao diretamente no SQL com `RANK()`. O projeto manteve a selecao do recorde pessoal no banco e o calculo final das posicoes no service, o que reduz sensibilidade a detalhes de sintaxe SQL e deixa a regra de empate mais explicita no codigo da aplicacao.
+
+### Sobre o frontend de demonstracao
+
+O desafio pedia apenas o endpoint REST em PHP. Ainda assim, eu decidi entregar um frontend de demonstracao como plus por tres motivos:
+
+1. Facilitar a avaliacao visual do funcionamento da API.
+2. Tornar as regras de negocio mais evidentes, especialmente ranking, empate e resposta JSON.
+3. Demonstrar cuidado com apresentacao tecnica, comunicacao de solucao e experiencia de uso.
+
+O frontend nao substitui o backend nem mascara a entrega principal. Ele existe como uma camada de demonstracao para deixar mais claro, rapido e objetivo como o endpoint responde e como as regras do desafio foram implementadas.
 
 ## Autor
 
-Desenvolvido como parte do desafio técnico Tecnofit.
+Matheus Coutinho
 
-## Licença
-
-Este projeto foi desenvolvido para fins de avaliação técnica.
