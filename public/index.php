@@ -56,12 +56,25 @@ $router->get('/health', [$healthController, 'health']);
 $router->get('/movements', [$rankingController, 'listMovements']);
 $router->get('/api/rankings', [$rankingController, 'getRanking']);
 
-// Despachar request
-$request = new Request();
-$response = new Response();
+// Detectar se é rota de API ou frontend
+$path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 
-try {
-    $router->dispatch($request, $response);
-} catch (Throwable $e) {
-    $response->error('internal_error', 'Erro interno do servidor', 500);
+// Se for rota de API, processa normalmente
+if (str_starts_with($path, '/api/') || $path === '/health' || $path === '/movements') {
+    $request = new Request();
+    $response = new Response();
+
+    try {
+        $router->dispatch($request, $response);
+    } catch (Throwable $e) {
+        $response->error('erro_interno', 'Erro interno do servidor', 500);
+    }
+} else {
+    // Serve o frontend
+    if (file_exists(__DIR__ . '/index.html')) {
+        readfile(__DIR__ . '/index.html');
+    } else {
+        http_response_code(404);
+        echo 'Frontend não encontrado';
+    }
 }

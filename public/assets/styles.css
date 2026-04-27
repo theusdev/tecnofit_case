@@ -9,10 +9,11 @@ body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
     padding: 20px;
+    line-height: 1.6;
 }
 
 .container {
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 0 auto;
     background: white;
     border-radius: 10px;
@@ -41,10 +42,12 @@ header p {
     display: flex;
     background: #f7f7f7;
     border-bottom: 2px solid #e0e0e0;
+    overflow-x: auto;
 }
 
 .tab-button {
     flex: 1;
+    min-width: 150px;
     padding: 15px;
     border: none;
     background: transparent;
@@ -67,15 +70,16 @@ header p {
 
 .tab-content {
     padding: 30px;
+    min-height: 400px;
 }
 
 .tab-pane {
     display: none;
+    animation: fadeIn 0.3s ease;
 }
 
 .tab-pane.active {
     display: block;
-    animation: fadeIn 0.3s ease;
 }
 
 @keyframes fadeIn {
@@ -94,6 +98,12 @@ header p {
     margin-bottom: 10px;
 }
 
+.tab-pane h3 {
+    color: #555;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
 .tab-pane p {
     color: #666;
     margin-bottom: 20px;
@@ -104,19 +114,26 @@ header p {
 }
 
 .form-group label {
-    display: block;
+    display: inline-block;
+    margin-right: 20px;
     margin-bottom: 5px;
     color: #333;
     font-weight: 500;
 }
 
-.form-group input {
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select {
+    width: 100%;
+    max-width: 400px;
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
     font-size: 1rem;
-    margin-right: 10px;
-    width: 100px;
+}
+
+.form-group input[type="radio"] {
+    margin-right: 5px;
 }
 
 .btn {
@@ -129,6 +146,8 @@ header p {
     font-size: 1rem;
     font-weight: 500;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-right: 10px;
+    margin-bottom: 10px;
 }
 
 .btn:hover {
@@ -140,13 +159,16 @@ header p {
     transform: translateY(0);
 }
 
+.btn-secondary {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
 .result {
     margin-top: 20px;
     padding: 20px;
     border-radius: 5px;
     background: #f9f9f9;
     border: 1px solid #e0e0e0;
-    min-height: 100px;
 }
 
 .result.empty {
@@ -161,6 +183,8 @@ header p {
     overflow-x: auto;
     font-size: 0.9rem;
     line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
 .result table {
@@ -192,18 +216,99 @@ header p {
     font-size: 1.2rem;
 }
 
-.result .medal {
-    font-size: 1.5rem;
+.chart {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 5px;
 }
 
-.result .success {
-    color: #22c55e;
+.chart canvas {
+    max-width: 100%;
+}
+
+.rule-card {
+    background: #f9f9f9;
+    border-left: 4px solid #667eea;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.rule-card.highlight {
+    background: #e8f4fd;
+    border-left-color: #2196F3;
+}
+
+.rule-card h3 {
+    margin-top: 0;
+    color: #667eea;
+}
+
+.rule-card.highlight h3 {
+    color: #2196F3;
+}
+
+.rule-card .example {
+    background: white;
+    padding: 10px;
+    border-radius: 3px;
+    font-style: italic;
+    color: #555;
+    margin-top: 10px;
+}
+
+.ranking-example {
+    margin-top: 15px;
+}
+
+.ranking-example table {
+    width: 100%;
+    max-width: 500px;
+    margin: 15px 0;
+}
+
+.ranking-example table th,
+.ranking-example table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.ranking-example table th {
+    background: #2196F3;
+    color: white;
+}
+
+.ranking-example table tr.tie {
+    background: #fff9e6;
+}
+
+.ranking-example .note {
+    font-size: 0.9rem;
+    color: #2196F3;
     font-weight: 600;
 }
 
-.result .error {
-    color: #ef4444;
-    font-weight: 600;
+.test-list {
+    list-style: none;
+    padding: 0;
+}
+
+.test-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.test-list li:before {
+    margin-right: 10px;
+}
+
+.test-list.highlight-test li {
+    background: #f0f8ff;
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 3px;
 }
 
 footer {
@@ -213,6 +318,10 @@ footer {
     color: #666;
     font-size: 0.9rem;
     border-top: 1px solid #e0e0e0;
+}
+
+footer p {
+    margin: 5px 0;
 }
 
 .loading {
@@ -229,4 +338,49 @@ footer {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+.success {
+    color: #22c55e;
+    font-weight: 600;
+}
+
+.error {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+.bar-chart {
+    margin-top: 20px;
+}
+
+.bar {
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: transform 0.2s ease;
+}
+
+.bar:hover {
+    transform: translateX(5px);
+}
+
+.bar.rank-1 {
+    background: linear-gradient(90deg, #ffd700 0%, #ffed4e 100%);
+    color: #333;
+}
+
+.bar.rank-2 {
+    background: linear-gradient(90deg, #c0c0c0 0%, #e8e8e8 100%);
+    color: #333;
+}
+
+.bar.rank-3 {
+    background: linear-gradient(90deg, #cd7f32 0%, #e89f71 100%);
+    color: white;
 }

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movement Ranking API - Demonstração</title>
+    <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Movement Ranking API</h1>
+            <p>API REST em PHP puro com MySQL 8 Window Functions</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-button active" data-tab="ranking">Ranking</button>
+            <button class="tab-button" data-tab="json">Resposta JSON</button>
+            <button class="tab-button" data-tab="regras">Regras de Negócio</button>
+            <button class="tab-button" data-tab="testes">Testes Cobertos</button>
+        </div>
+
+        <div class="tab-content">
+            <!-- Aba 1: Ranking -->
+            <div id="ranking" class="tab-pane active">
+                <h2>Buscar Ranking</h2>
+                <p>Busque o ranking de um movimento por ID ou Nome</p>
+
+                <div class="form-group">
+                    <label>
+                        <input type="radio" name="search_type" value="id" checked>
+                        Buscar por ID
+                    </label>
+                    <label>
+                        <input type="radio" name="search_type" value="name">
+                        Buscar por Nome
+                    </label>
+                </div>
+
+                <div class="form-group" id="search-id-group">
+                    <label for="movement-id">ID do Movimento:</label>
+                    <select id="movement-id">
+                        <option value="">Carregue os movimentos primeiro</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="search-name-group" style="display: none;">
+                    <label for="movement-name">Nome do Movimento:</label>
+                    <input type="text" id="movement-name" placeholder="Ex: Deadlift">
+                </div>
+
+                <button class="btn" onclick="app.searchRanking()">Buscar Ranking</button>
+                <button class="btn btn-secondary" onclick="app.loadMovements()">Carregar Movimentos</button>
+
+                <div id="ranking-table-result" class="result"></div>
+                <div id="ranking-chart-result" class="chart"></div>
+            </div>
+
+            <!-- Aba 2: JSON -->
+            <div id="json" class="tab-pane">
+                <h2>Resposta JSON da API</h2>
+                <p>Visualize o JSON retornado pela última requisição</p>
+                <button class="btn btn-secondary" onclick="app.copyJson()">Copiar JSON</button>
+                <div id="json-result" class="result">
+                    <pre id="json-pre">Nenhuma requisição realizada ainda</pre>
+                </div>
+            </div>
+
+            <!-- Aba 3: Regras de Negócio -->
+            <div id="regras" class="tab-pane">
+                <h2>Regras de Negócio</h2>
+
+                <div class="rule-card">
+                    <h3>1. Recorde Pessoal</h3>
+                    <p>O sistema agrupa todos os recordes de um usuário e seleciona o maior valor registrado.</p>
+                    <p class="example">Exemplo: Se Joao registrou 150kg, 160kg e 180kg no Deadlift, seu recorde pessoal é 180kg.</p>
+                </div>
+
+                <div class="rule-card">
+                    <h3>2. Ordenação Decrescente</h3>
+                    <p>O ranking é ordenado do maior para o menor valor de recorde pessoal.</p>
+                    <p class="example">Exemplo: 190kg → 180kg → 170kg</p>
+                </div>
+
+                <div class="rule-card">
+                    <h3>3. Empates Compartilham Posição</h3>
+                    <p>Quando dois ou mais usuários possuem o mesmo recorde pessoal, eles compartilham a mesma posição no ranking.</p>
+                    <p class="example">Exemplo: Jose (180kg) e Paulo (180kg) ficam ambos na 2ª posição.</p>
+                </div>
+
+                <div class="rule-card highlight">
+                    <h3>4. Próxima Posição Após Empate (Regra RANK)</h3>
+                    <p>Após um empate, a próxima posição considera todos os competidores anteriores.</p>
+                    <p class="example">Exemplo: Se há 1 pessoa em 1º e 2 pessoas em 2º (empate), a próxima posição é a 4ª, não a 3ª.</p>
+                    <div class="ranking-example">
+                        <table>
+                            <tr><th>Posição</th><th>Usuário</th><th>Recorde</th></tr>
+                            <tr><td class="position">1º</td><td>João</td><td>190 kg</td></tr>
+                            <tr class="tie"><td class="position">2º</td><td>José</td><td>180 kg</td></tr>
+                            <tr class="tie"><td class="position">2º</td><td>Paulo</td><td>180 kg</td></tr>
+                            <tr><td class="position">4º</td><td>Maria</td><td>170 kg</td></tr>
+                        </table>
+                        <p class="note">Note que não existe a 3ª posição devido ao empate.</p>
+                    </div>
+                </div>
+
+                <div class="rule-card">
+                    <h3>5. Data do Recorde</h3>
+                    <p>A data exibida corresponde ao momento em que o maior valor foi registrado.</p>
+                    <p class="example">Se o recorde de 180kg foi atingido em duas datas diferentes, exibe a mais recente.</p>
+                </div>
+
+                <div class="rule-card">
+                    <h3>6. Window Function (RANK)</h3>
+                    <p>A API utiliza a função RANK() do MySQL 8 para calcular as posições corretamente.</p>
+                    <p class="example">RANK() OVER (ORDER BY pr.value DESC) - Garante empates com posições corretas</p>
+                </div>
+            </div>
+
+            <!-- Aba 4: Testes Cobertos -->
+            <div id="testes" class="tab-pane">
+                <h2>Testes Automatizados Cobertos</h2>
+
+                <h3>Testes Unitários (com Mocks)</h3>
+                <ul class="test-list">
+                    <li>✓ Busca de ranking por ID do movimento retorna MovementRanking</li>
+                    <li>✓ Busca de ranking por nome do movimento retorna MovementRanking</li>
+                    <li>✓ Movimento não encontrado por ID lança NotFoundException</li>
+                    <li>✓ Movimento não encontrado por nome lança NotFoundException</li>
+                    <li>✓ ID inválido (zero ou negativo) lança ValidationException</li>
+                    <li>✓ Limite inválido (zero ou negativo) lança ValidationException</li>
+                    <li>✓ Nome vazio lança ValidationException</li>
+                    <li>✓ Movimento sem recordes retorna ranking vazio</li>
+                    <li>✓ Lista de movimentos retorna array</li>
+                </ul>
+
+                <h3>Testes de Integração - Repository</h3>
+                <ul class="test-list">
+                    <li>✓ Query retorna resultados em ordem correta</li>
+                    <li>✓ Query respeita limite de resultados</li>
+                    <li>✓ Contagem de usuários por movimento</li>
+                    <li>✓ Movimento inexistente retorna array vazio</li>
+                </ul>
+
+                <h3>Testes de Integração - Empates (TieBreaking)</h3>
+                <ul class="test-list highlight-test">
+                    <li>✓ <strong>Valores 190, 180, 180, 170 retornam posições 1, 2, 2, 4</strong></li>
+                    <li>✓ Ordem é decrescente por valor</li>
+                    <li>✓ Posições seguem a sequência correta após empates</li>
+                    <li>✓ Mesmos valores compartilham a mesma posição</li>
+                </ul>
+
+                <h3>Testes de Integração - Endpoint HTTP</h3>
+                <ul class="test-list">
+                    <li>✓ GET /health retorna status ok</li>
+                    <li>✓ GET /api/rankings?movement_id=1 retorna 200 com formato correto</li>
+                    <li>✓ GET /api/rankings?movement_name=Deadlift retorna 200</li>
+                    <li>✓ GET /api/rankings sem parâmetros retorna 400</li>
+                    <li>✓ GET /api/rankings com ambos parâmetros retorna 400</li>
+                    <li>✓ GET /api/rankings?movement_id=999 retorna 404</li>
+                    <li>✓ GET /api/rankings?movement_name=Inexistente retorna 404</li>
+                    <li>✓ GET /movements retorna array de movimentos</li>
+                    <li>✓ Rota inexistente retorna 404</li>
+                    <li>✓ Formato JSON segue especificação (movement, user, personal_record aninhados)</li>
+                    <li>✓ Data em formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)</li>
+                    <li>✓ Meta contém total_users e generated_at</li>
+                </ul>
+
+                <h3>Cobertura de Código</h3>
+                <ul class="test-list">
+                    <li>✓ RankingService: 100%</li>
+                    <li>✓ RankingController: 100%</li>
+                    <li>✓ PersonalRecordRepository: 100%</li>
+                    <li>✓ MovementRepository: 100%</li>
+                </ul>
+            </div>
+        </div>
+
+        <footer>
+            <p>Tecnofit Technical Case - Movement Ranking API</p>
+            <p>PHP 8.1 | MySQL 8.0 | Window Functions (RANK) | PSR-4 | Docker Compose</p>
+        </footer>
+    </div>
+
+    <script src="assets/app.js"></script>
+</body>
+</html>
