@@ -1,4 +1,4 @@
-# Movement Ranking API
+# Ranking de Movimentos API
 
 API REST desenvolvida em PHP puro para retornar o ranking de um movimento com base no maior recorde pessoal de cada usuario.
 
@@ -247,32 +247,6 @@ Observacao:
 }
 ```
 
-## Comandos uteis
-
-### Ver containers
-
-```bash
-docker compose ps
-```
-
-### Ver logs da aplicacao
-
-```bash
-docker compose logs app --tail=200
-```
-
-### Derrubar containers
-
-```bash
-docker compose down
-```
-
-### Derrubar containers e volume do banco
-
-```bash
-docker compose down -v
-```
-
 ## Testes e qualidade
 
 Executar testes:
@@ -364,4 +338,3 @@ O frontend nao substitui o backend nem mascara a entrega principal. Ele existe c
 ## Autor
 
 Matheus Coutinho
-

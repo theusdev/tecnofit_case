@@ -52,6 +52,7 @@ tmpclaude-*
 *.swp
 *.swo
 *~
+.docs
 
 # OS files
 Thumbs.db
