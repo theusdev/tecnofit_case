@@ -331,7 +331,8 @@ O desafio pedia apenas o endpoint REST em PHP. Ainda assim, eu decidi entregar u
 
 1. Facilitar a avaliacao visual do funcionamento da API.
 2. Tornar as regras de negocio mais evidentes, especialmente ranking, empate e resposta JSON.
-3. Demonstrar cuidado com apresentacao tecnica, comunicacao de solucao e experiencia de uso.
+3. Demonstrar cuidado com apresentação técnica, comunicação de solução.
+4. Demonstrar preocupação com experiencia do usuario desde o plano do projeto até o resultado final.
 
 O frontend nao substitui o backend nem mascara a entrega principal. Ele existe como uma camada de demonstracao para deixar mais claro, rapido e objetivo como o endpoint responde e como as regras do desafio foram implementadas.
 
