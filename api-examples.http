@@ -12,75 +12,99 @@ Accept: application/json
 
 ###
 
-### 3. Ranking Deadlift (sem limite)
-GET http://localhost:8080/ranking?movement_id=1
+### 3. Ranking Deadlift por ID (sem limite)
+GET http://localhost:8080/api/rankings?movement_id=1
 Accept: application/json
 
 ###
 
-### 4. Ranking Deadlift (top 5)
-GET http://localhost:8080/ranking?movement_id=1&limit=5
+### 4. Ranking Deadlift por ID (top 5)
+GET http://localhost:8080/api/rankings?movement_id=1&limit=5
 Accept: application/json
 
 ###
 
-### 5. Ranking Back Squat (sem limite)
-GET http://localhost:8080/ranking?movement_id=2
+### 5. Ranking Deadlift por Nome
+GET http://localhost:8080/api/rankings?movement_name=Deadlift
 Accept: application/json
 
 ###
 
-### 6. Ranking Back Squat (top 3)
-GET http://localhost:8080/ranking?movement_id=2&limit=3
+### 6. Ranking Back Squat por ID
+GET http://localhost:8080/api/rankings?movement_id=2
 Accept: application/json
 
 ###
 
-### 7. Ranking Bench Press (sem limite)
-GET http://localhost:8080/ranking?movement_id=3
+### 7. Ranking Back Squat por Nome
+GET http://localhost:8080/api/rankings?movement_name=Back Squat
+Accept: application/json
+
+###
+
+### 8. Ranking Bench Press por ID
+GET http://localhost:8080/api/rankings?movement_id=3
 Accept: application/json
 
 ###
 
 ### CASOS DE ERRO
 
-### 8. Erro: movement_id obrigatório
-GET http://localhost:8080/ranking
+### 9. Erro: nenhum parâmetro fornecido
+GET http://localhost:8080/api/rankings
 Accept: application/json
 
 ###
 
-### 9. Erro: movement_id inválido (zero)
-GET http://localhost:8080/ranking?movement_id=0
+### 10. Erro: ambos parâmetros fornecidos (XOR)
+GET http://localhost:8080/api/rankings?movement_id=1&movement_name=Deadlift
 Accept: application/json
 
 ###
 
-### 10. Erro: movement_id negativo
-GET http://localhost:8080/ranking?movement_id=-1
+### 11. Erro: movement_id inválido (zero)
+GET http://localhost:8080/api/rankings?movement_id=0
 Accept: application/json
 
 ###
 
-### 11. Erro: limit inválido (zero)
-GET http://localhost:8080/ranking?movement_id=1&limit=0
+### 12. Erro: movement_id negativo
+GET http://localhost:8080/api/rankings?movement_id=-1
 Accept: application/json
 
 ###
 
-### 12. Erro: limit negativo
-GET http://localhost:8080/ranking?movement_id=1&limit=-5
+### 13. Erro: movement_name vazio
+GET http://localhost:8080/api/rankings?movement_name=
 Accept: application/json
 
 ###
 
-### 13. Erro: movimento não encontrado
-GET http://localhost:8080/ranking?movement_id=999
+### 14. Erro: limit inválido (zero)
+GET http://localhost:8080/api/rankings?movement_id=1&limit=0
 Accept: application/json
 
 ###
 
-### 14. Erro: rota não encontrada
+### 15. Erro: limit negativo
+GET http://localhost:8080/api/rankings?movement_id=1&limit=-5
+Accept: application/json
+
+###
+
+### 16. Erro: movimento não encontrado por ID
+GET http://localhost:8080/api/rankings?movement_id=999
+Accept: application/json
+
+###
+
+### 17. Erro: movimento não encontrado por Nome
+GET http://localhost:8080/api/rankings?movement_name=Inexistente
+Accept: application/json
+
+###
+
+### 18. Erro: rota não encontrada
 GET http://localhost:8080/invalid-route
 Accept: application/json
 

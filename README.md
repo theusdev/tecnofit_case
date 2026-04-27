@@ -121,29 +121,40 @@ Retorna todos os movimentos cadastrados.
 
 #### 3. Obter Ranking
 ```
-GET /ranking?movement_id={id}&limit={limit}
+GET /api/rankings?movement_id={id}
+GET /api/rankings?movement_name={name}
 ```
 
-**Parâmetros:**
-- `movement_id` (obrigatório): ID do movimento
+**Parâmetros (mutuamente exclusivos):**
+- `movement_id` (XOR): ID do movimento
+- `movement_name` (XOR): Nome do movimento
 - `limit` (opcional): Número máximo de resultados
 
 **Resposta:**
 ```json
 {
   "data": {
-    "movement_id": 1,
-    "movement_name": "Deadlift",
-    "total_users": 3,
+    "movement": {
+      "id": 1,
+      "name": "Deadlift"
+    },
     "ranking": [
       {
         "position": 1,
-        "user_id": 1,
-        "user_name": "Joao",
-        "personal_record": 180.0,
-        "record_date": "2021-01-04"
+        "user": {
+          "id": 1,
+          "name": "Joao"
+        },
+        "personal_record": {
+          "value": 180.0,
+          "date": "2021-01-04T00:00:00Z"
+        }
       }
     ]
+  },
+  "meta": {
+    "total_users": 3,
+    "generated_at": "2026-04-26T00:30:45Z"
   }
 }
 ```
@@ -212,22 +223,23 @@ O banco é inicializado com dados de exemplo:
 
 ### Window Functions
 
-O ranking utiliza a função `DENSE_RANK()` do MySQL 8:
+O ranking utiliza a função `RANK()` do MySQL 8:
 ```sql
-DENSE_RANK() OVER (ORDER BY pr.value DESC) as position
+RANK() OVER (ORDER BY pr.value DESC) as position
 ```
 
 Isso garante que:
 - Usuários com o mesmo recorde recebem a mesma posição
-- Não há saltos na numeração (1, 2, 2, 3 ao invés de 1, 2, 2, 4)
+- Há saltos na numeração após empates (1, 2, 2, 4 ao invés de 1, 2, 2, 3)
+- Reflete corretamente a posição real no ranking
 
 ## Frontend Demo
 
-Acesse http://localhost:8080/demo.html para visualizar a interface de demonstração com:
-- Health Check
-- Lista de movimentos
-- Ranking do Deadlift
-- Ranking do Back Squat
+Acesse http://localhost:8080 para visualizar a interface de demonstração com:
+- **Ranking**: Busca por ID ou Nome com gráfico de barras
+- **Resposta JSON**: Visualização do JSON retornado pela API
+- **Regras de Negócio**: Explicação visual das regras de ranking
+- **Testes Cobertos**: Lista completa de testes automatizados
 
 ## Estrutura de Diretórios
 
